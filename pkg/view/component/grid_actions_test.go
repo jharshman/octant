@@ -18,7 +18,7 @@ func TestGridActions_AddAction(t *testing.T) {
 	ga := NewGridActions()
 
 	payload := action.Payload{"foo": "bar"}
-	ga.AddAction("name", "/path", payload)
+	ga.AddAction("name", "/path", payload, nil)
 
 	expected := []GridAction{
 		{

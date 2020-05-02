@@ -4,6 +4,7 @@
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
+  Confirmation,
   GridAction,
   GridActionsView,
   TableFilters,
@@ -37,7 +38,10 @@ export class DatagridComponent implements OnChanges {
   placeholder: string;
   lastUpdated: Date;
   filters: TableFilters;
+  isModalOpen = false;
+  confirmation?: Confirmation;
 
+  private modalAction: GridAction;
   private previousView: SimpleChanges;
 
   identifyRow = trackByIndex;
@@ -88,9 +92,16 @@ export class DatagridComponent implements OnChanges {
     });
   }
 
-  runAction(actionPath: string, payload: {}) {
-    const update = { ...payload, action: actionPath };
-    this.actionService.perform(update);
+  runAction(action: GridAction) {
+    if (!action.confirmation) {
+      const update = { ...action.payload, action: action.actionPath };
+      this.actionService.perform(update);
+      return;
+    }
+
+    this.modalAction = action;
+    this.isModalOpen = true;
+    this.confirmation = action.confirmation;
   }
 
   showTitle() {
@@ -98,6 +109,24 @@ export class DatagridComponent implements OnChanges {
       return this.view.totalItems === undefined || this.view.totalItems > 1;
     }
     return true;
+  }
+
+  cancelModal() {
+    this.resetModal();
+  }
+
+  acceptModal() {
+    this.resetModal();
+    const update = {
+      ...this.modalAction.payload,
+      action: this.modalAction.actionPath,
+    };
+    this.actionService.perform(update);
+  }
+
+  private resetModal() {
+    this.isModalOpen = false;
+    this.confirmation = undefined;
   }
 }
 
